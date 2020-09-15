@@ -161,8 +161,16 @@ void dd(type *t){
 	dd(t->n);
 }
 
+void destroy(type **t) {
+	if(!(*t))
+		return;
+	pop(t);
+	destroy(t);
+}
+
 
 int main(void){
+	int rc = 0;
 	type * l = NULL;
 	type * r = NULL;
 	if(!(l = malloc(TYPE_SIZE)))
@@ -192,7 +200,11 @@ int main(void){
 	dump(l);
 	printf("\n");
 
-	return 0;
+cleanup:
+	//destroy(&r);  // don't destroy if merged
+	destroy(&l);
+exit:
+	return rc;
 out:
 	fprintf(stderr, "%s: fail\n", __func__);
 	exit(1);
