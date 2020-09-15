@@ -42,7 +42,6 @@ void merge(type *t, type *l, type *r, buf_size ls, buf_size rs) {
 	while(i < ls && j < rs)
 		if(lt(l[i], r[j]))
 			t[k++] = l[i++];
-		// uncomment to remove duplicates
 		// else if(eq(l[i], r[j])) {
 		// 	k++;
 		// 	j++;
