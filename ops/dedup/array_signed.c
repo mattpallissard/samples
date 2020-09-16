@@ -13,6 +13,7 @@ enum {
 	HALF = MAX / 2 - 1
 };
 
+#define pf "%ld"
 
 type get_mask(type i)
 {
@@ -36,7 +37,7 @@ void insert(type i, type *b) {
 
 void display(type *t, bs i, bs j) {
 	while(i <= j)
-		printf("%ld, ", t[i++]);
+		printf(""pf", ", t[i++]);
 	printf("\n");
 }
 

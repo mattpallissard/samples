@@ -8,11 +8,10 @@ typedef uint64_t type;
 typedef int bs;
 enum {
 	TYPE_SIZE = sizeof(type),
-	BS_SIZE = 32,
-	MAX = 8,
-	HALF = MAX / 2 - 1
+	LEN = 8
 };
 
+#define pf "%ld"
 
 type get_mask(type i)
 {
@@ -21,23 +20,23 @@ type get_mask(type i)
 
 type member(type i, type *b)
 {
-	return (*b >> i) >> HALF & 1;
+	return (*b >> i) & 1;
 }
 
 void insert(type i, type *b) {
-	*b |= (get_mask(i) << HALF);
+	*b |= (get_mask(i));
 }
 
 void display(type *t, bs i, bs j) {
 	while(i <= j)
-		printf("%ld, ", t[i++]);
+		printf(""pf", ", t[i++]);
 	printf("\n");
 }
 
 
 int main(void) {
 	type i[] = {9,4,6,32,5,9,8,2,1,7};
-	type b[8] = {};
+	type b[LEN] = {};
 	size_t h = sizeof(i) / sizeof(type);
 	bs j = 0, k = 0, rl = h - 1;
 	display(i, 0, h - 1);
