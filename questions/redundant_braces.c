@@ -2,29 +2,36 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/*
+   check whether or not an expression has redundant braces.
+   assumes that there is an even number of braces
+*/
 
-int get_open(char *expr, int i) {
+bool check_em(char *i){
+	return (i[0] == '(' && i[1] == '(') || (i[0] == ')' && i[1] == ')');
+}
+
+int aux(char *expr, int i) {
+	int incr = 2;
 	if(!expr[0])
 		return i;
 
-	if(expr[0] == '(' && expr[1] == '(')
+	if(check_em(expr))
 		i++;
-	else if(expr[0] ==')' && expr[1] == ')')
-		i++;
+	else
+		incr = 1;
 
-	return get_open(expr+1, i);
+	return aux(expr+incr, i);
 }
-
 
 
 int main(void) {
 
-	char *expr = "(a + b)\0";
+	char *expr = "((a + b)+c)\0";
 	int i;
 
-	if(!(i = get_open(expr, 0)))
+	if(!(i = aux(expr, 0)))
 		i = 1;
 
-
-	printf("%d\n", (i % 2 ? 0 : 1));
+	printf("%s\n", i & 1 ? "no extra" : "extra");
 }
