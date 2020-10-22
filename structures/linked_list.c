@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/*
+tag:   stack
+*/
 typedef int type;
 
 typedef struct node {
@@ -29,6 +32,18 @@ out:
 	exit(1);
 }
 
+type get_min(node_t * h){
+	// walk list, return min
+	node_t * c = h;
+	int r = c->v;
+	while(c){
+		if(r > c->v)
+			r = c->v;
+		c = c -> n;
+	}
+	return r;
+}
+
 void push(node_t ** h, type v) {
 	node_t * n;
 	if(!(n = malloc(sizeof(node_t))))
@@ -44,9 +59,11 @@ out:
 }
 
 type pop(node_t **h) {
+	// set current to next, free current
 	int r = -1;
 	node_t * n = NULL;
 
+	// base case, null
 	if (!h)
 		return r;
 
@@ -70,6 +87,7 @@ void dump(node_t * h) {
 
 
 type ri(node_t **h, type n) {
+	// return a specific index
 	int r = -1;
 	node_t *c = *h;
 	node_t *t = NULL;
@@ -79,7 +97,7 @@ type ri(node_t **h, type n) {
 	n--;
 
 	for (int i = 0; i < n; i++) {
-		if (!c -> n || c -> v)
+		if (!c -> n ||! c -> v)
 			return -1;
 		c = c -> n;
 
@@ -95,6 +113,7 @@ type ri(node_t **h, type n) {
 
 
 type rl(node_t * h) {
+	//return lowest
 	type r = 0;
 	node_t * c = h;
 	if (!c -> n) {
@@ -121,13 +140,13 @@ int main(void){
 	h->v = 1;
 	h ->n = NULL;
 
-	push(&h, 2);
+	push(&h, 5);
 	push(&h, 3);
 	push(&h, 4);
 	dump(h);
 	printf("\n");
-	ri(&h, 3);
 	dump(h);
+	printf("index: %d\n", ri(&h, 2));
 
 	return 0;
 out:
