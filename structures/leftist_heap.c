@@ -2,13 +2,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+
+/*
+tag: queue
+*/
 typedef int dtype;
 typedef struct node {
 	dtype d, v;
 	struct node *l, *r, *p;
 } type;
 typedef type type;
-typedef int bs;
+typedef int bs; //buffer size
 enum {
 	BUF_MAX = 254,
 	TYPE_SIZE = sizeof(type),
@@ -89,6 +93,7 @@ void *rm_root(type **i) {
 	r = (*i)->r;
 	free(*i);
 	*i = merge(l, r);
+	return *i;
 }
 
 dtype get_min(type *i){
@@ -120,11 +125,11 @@ int main(void){
 	i = insert(i, 3);
 	i = insert(i, 4);
 	i = insert(i, 5);
-	dump(i);
+	//dump(i);
 	printf("\n");
 	printf("%d\n", pop(&i));
 	printf("%d\n", pop(&i));
 	printf("%d\n", pop(&i));
 	printf("\n");
-	dump(i);
+	//dump(i);
 }
