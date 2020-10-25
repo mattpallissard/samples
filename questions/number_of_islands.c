@@ -3,142 +3,119 @@
 #include <string.h>
 #include <stdbool.h>
 
-typedef struct type {
-	int x;
-	int y;
-} type_t;
 
+enum { R = 10, C = 10, SIDES = 8 };
 
-typedef struct node {
-	type_t v; // value
-	struct node *n; // next
-} node_t;
-
-#define EMPTY {}
-enum {
-	R = 10,
-	C = 10,
-	NODE_SIZE = sizeof(node_t),
-	SIDES = 8
-};
 // hard coded coordinates
 int r[] = { -1, -1, -1, 0, 1, 0, 1, 1 };
 int c[] = { -1, 1, 0, -1, -1, 1, 0, 1 };
 
 
-void push(node_t ** h, type_t v) {
-	node_t * n;
-	if(!(n = malloc(sizeof(node_t))))
-		goto out;
-
-	n->v = v;
-	n->n = *h;
-	*h = n;
-	return;
-out:
-	fprintf(stderr, "%s: fail\n", __func__);
-	exit(1);
+/*
+   we need a function that checks that a coordinate is valid
+   are they non negative and inside the bounds
+   have we seen it already?
+   is it a positive integer in the source array
+*/
+bool is_valid(int m[R][C], bool s[R][C], int x, int y)
+{
+	return (x >= 0) && (x < R) && (y >= 0) && (y < C) && (!s[y][x] && m[y][x]);
 }
 
-type_t pop(node_t **h) {
-	// set current to next, free current
-	type_t r = EMPTY;
-	node_t * n = NULL;
-
-	// base case, null
-	if (!h)
-		return r;
-
-	n = (*h)->n;
-	r = (*h)->v;
-	free(*h);
-	*h = n;
-
-	return r ;
-}
-
-bool is_valid(int m[R][C], bool s[R][C], int x, int y){
-	return (x>=0) && (x < R) && (y >= 0) && (y < C) && (!s[y][x] && m[y][x]);
-}
-
-void aux(int m[R][C], bool s[R][C], node_t **h) {
-	type_t t; // coordinate
-	type_t tn; // new t
-	int x;
-	int y;
-	while((*h)->n){
-		t = pop(h);
-		printf("%d,%d\n", t.x, t.y);
-		for(int k = 0; k < SIDES; k++){
-			printf("\n");
-			int x = r[k] + t.x;
-			int y = c[k] + t.y;
-
-			printf("%s\n", s[y][x] ? "true" : "false");
-			printf("%d,%d\n", x, y);
-			if(is_valid(m, s, x, y)){
-				s[y][x] = true;
-				tn.x = x;
-				tn.y = y;
-				push(h, tn);
-			}
-		}
+void aux(int m[R][C], bool s[R][C], int x, int y)
+{
+	s[y][x] = true;
+	for (int k = 0; k < SIDES; k++) {
+		if (is_valid(m, s, r[k] + x, c[k] + y))
+			aux(m, s, r[k] + x, c[k] + y);
 	}
-	pop(h);
 }
 
-node_t *init_queue(){
-	node_t * h = NULL; // queue head
-
-	if(!(h = malloc(NODE_SIZE)))
-		goto out;
-
-	h -> v.x = -1;
-	h -> v.y = -1;
-	h -> n = NULL;
-	return h;
-out:
-	// do the failure thing
-	exit(1);
-}
-
-int find(int m[R][C]){
+int find_iter(int m[R][C])
+{
 	int sum = 0;
 	bool seen[R][C] = {};
 	memset(seen, 0, sizeof(seen));
 
-	node_t * h = init_queue();
-
-
-	for(int x = 0; x < R; x++)
-		for(int y = 0; y < C; y++){
-			if(m[y][x] && !seen[y][x]){
-				printf("howdy\n");
-				type_t coord = { x=x, y=y};
-				seen[y][x] = true;
-				push(&h, coord);
-				aux(m, seen, &h);
+	for (int x = 0; x < R; x++)
+		for (int y = 0; y < C; y++) {
+			if (m[y][x] && !seen[y][x]) {
+				aux(m, seen, x, y);
 				sum++;
 			}
 		}
 	return sum;
 }
 
-int main(void){
+/*
+ we need to walk around the perimeter of a cooordinate
+ if the perimiter coordinate is valid, check it as if it were the center.
+ then chekc the next perimiter coordinate
+*/
 
-	int matrix[R][C] = {
-		{ 1, 0, 1, 0, 0, 0, 1, 1, 1, 1 },
-		{ 0, 0, 1, 0, 1, 0, 1, 0, 0, 0 },
-		{ 1, 1, 1, 1, 0, 0, 1, 0, 0, 0 },
-		{ 1, 0, 0, 1, 0, 1, 0, 0, 0, 0 },
-		{ 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 },
-		{ 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 },
-		{ 0, 0, 0, 0, 0, 1, 1, 1, 0, 0 },
-		{ 0, 0, 0, 1, 0, 0, 1, 1, 1, 0 },
-		{ 1, 0, 1, 0, 1, 0, 0, 1, 0, 0 },
-		{ 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 }
-	};
+void walk_perimeter(int m[R][C], bool s[R][C], int p, int x, int y)
+{
+	if (p == SIDES)
+		return;
 
-	printf("-%d\n", find(matrix));
+	s[y][x] = true;
 
+	if (is_valid(m, s, r[p] + x, c[p] + y))
+		walk_perimeter(m, s, 0, r[p] + x, c[p] + y);
+
+	walk_perimeter(m, s, p + 1, x, y);
+}
+
+/*
+ given a x coordinate, walk the y axis
+*/
+
+int iter_y(int m[R][C], bool s[R][C], int sum, int x, int y)
+{
+	if (y == R)
+		return sum;
+
+	if (m[y][x] && !s[y][x]) {
+		walk_perimeter(m, s, 0, x, y);
+		sum++;
+	}
+
+	return iter_y(m, s, sum, x, y + 1);
+}
+
+/*
+   walk the x axis, handing each coordinate to the function that walks the y axis
+*/
+int iter_x(int m[R][C], bool s[R][C], int sum, int x)
+{
+	if (x == C)
+		return sum;
+
+	return iter_y(m, s, sum, x, 0) + iter_x(m, s, sum, x + 1);
+}
+
+
+// do the thing
+int find(int m[R][C])
+{
+	bool seen[R][C] = {};
+	memset(seen, 0, sizeof(seen));
+	return iter_x(m, seen, 0, 0);
+}
+
+int main(void)
+{
+	int matrix[][C] = { { 1, 0, 1, 0, 0, 0, 1, 1, 1, 1 },
+		            { 0, 0, 1, 0, 1, 0, 1, 0, 0, 0 },
+			    { 1, 1, 1, 1, 0, 0, 1, 0, 0, 0 },
+			    { 1, 0, 0, 1, 0, 1, 0, 0, 0, 0 },
+			    { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 },
+			    { 0, 1, 0, 1, 0, 0, 1, 1, 1, 1 },
+			    { 0, 0, 0, 0, 0, 1, 1, 1, 0, 0 },
+			    { 0, 0, 0, 1, 0, 0, 1, 1, 1, 0 },
+			    { 1, 0, 1, 0, 1, 0, 0, 1, 0, 0 },
+			    { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1 } };
+
+	printf("%d\n", find(matrix));
+	printf("%d\n", find_iter(matrix));
 }

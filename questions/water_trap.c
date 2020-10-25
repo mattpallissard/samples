@@ -64,52 +64,56 @@ enum {
 struct s {
 	/* and we'll need some sort of 'object' to keep track of the 'state */
 	int direction; // direction
-	int sum; // sum of the area to date
+	int sum; // sum of the area to date, well if iterations were ticks of some sort
 	int num; // number of steps since the last peak
+
+	// left and right
 	int l; // last peak
 	int r; // previous location
 };
 
-
 int what(struct s s, int i);
-void print_direction(struct s s){
-	switch (s.direction){
-		case UP:
-			printf ("up");
-			return;
-		case DOWN:
-			printf ("down");
-			return;
-		case INIT:
-			printf ("init");
-			return;
+void print_direction(struct s s)
+{
+	switch (s.direction) {
+	case UP:
+		printf("up");
+		return;
+	case DOWN:
+		printf("down");
+		return;
+	case INIT:
+		printf("init");
+		return;
 	}
 	printf("error");
 }
-void print_type(struct s s, int i){
-	switch (what(s, i)){
-		case INCLINE:
-			printf("INCLINE");	
-			return;
-		case PEAK:
-			printf("PEAK");
-			return;
-		case DECLINE:
-			printf("DECLINE");
-			return;
-		case VALLEY:
-			printf("VALLEY");
-			return;
+void print_type(struct s s, int i)
+{
+	switch (what(s, i)) {
+	case INCLINE:
+		printf("INCLINE");
+		return;
+	case PEAK:
+		printf("PEAK");
+		return;
+	case DECLINE:
+		printf("DECLINE");
+		return;
+	case VALLEY:
+		printf("VALLEY");
+		return;
 	}
-		printf("NONE");
+	printf("NONE");
 }
 
-void display_debug(struct s s, int *i){
+void display_debug(struct s s, int *i)
+{
 	printf("s.l:%d i:%d s.sum:%d s.num:%d\n", s.l, i[0], s.sum, s.num);
-	int cursor  = i[0];
+	int cursor = i[0];
 	print_direction(s);
 	printf(":");
-	print_type(s,cursor);
+	print_type(s, cursor);
 	printf("\n");
 }
 
@@ -120,44 +124,45 @@ struct s carry(struct s s, int i)
 	return s;
 }
 
-
 /* but then when we reach the top, we'll need to account for all of the difference between the cursor and the smaller of the two peaks */
-struct s sum(struct s s) {
+struct s sum(struct s s)
+{
 	bool down = s.r > s.l;
 	s.sum += (down ? s.l - s.r : s.r - s.l) * s.num;
-	s.num = 0;
+	s.num = 0; // mark it zero dude
 	return s;
 }
 
 /* we'll need a function to toggle the directoin */
 
-struct s direction(struct s s){
+struct s direction(struct s s)
+{
 	if (s.direction == UP)
 		s.direction = DOWN;
 	else
-		s.direction = UP ;
+		s.direction = UP;
 	return s;
 }
 
 /* another to derive the location from a direction, last position and current position */
 
-int what(struct s s, int i) {
+int what(struct s s, int i)
+{
 	bool up = s.r < i;
 	bool down = s.r > i;
 	bool flat = s.r == i;
-	if(s.direction == UP && up)
-		return INCLINE;	
-	else if(s.direction == UP && down)
+	if (s.direction == UP && up)
+		return INCLINE;
+	else if (s.direction == UP && down)
 		return PEAK;
-	else if(s.direction == DOWN && down)
+	else if (s.direction == DOWN && down)
 		return DECLINE;
-	else if(s.direction == DOWN && up)
+	else if (s.direction == DOWN && up)
 		return VALLEY;
-	else if(flat)
+	else if (flat)
 		return PLATEAU;
 	else
-		return NONE;
-
+		return NONE; // our init case
 }
 
 /*
@@ -168,52 +173,55 @@ int what(struct s s, int i) {
 
    at the peak, we sum area above known positions, we also reset previous peak to current 
    */
-int aux(int *i, struct s s, size_t len){
-
+int aux(int *i, struct s s, size_t len)
+{
 	display_debug(s, i);
-	int cursor  = i[0];
+	int cursor = i[0];
 	bool up = s.r < cursor;
-	switch(what(s, cursor)) {
-		case PLATEAU:
+	switch (what(s, cursor)) {
+	case PLATEAU:
+		break;
+	case VALLEY:
+		s = direction(s);
+	case DECLINE:
+		cursor = s.r;
+	case INCLINE:
+		s.num++;
+		s = carry(s, cursor);
+		break;
+	case PEAK:
+		s.l = s.r;
+		s = direction(s);
+		s = sum(s);
+		break;
+	case NONE:
+		if (up) {
+			s.direction = UP;
+			s.l = cursor;
 			break;
-		case VALLEY:
-			s = direction(s);
-		case DECLINE:
-			cursor = s.r;
-		case INCLINE:
-			s.num++;
-			s = carry(s, cursor);
-			break;
-		case PEAK:
-			s.l = s.r;
-			s = direction(s);
-			s = sum(s);
-			break;
-		case NONE:
-			if(up){
-				s.direction = UP;
-				s.l = cursor;
-				break;
-			}
-			s.direction = DOWN;
-			s.num++;
+		}
+		// I technically don't need to account for this,
+		//but 1. it should at least be noted in the comments
+		//    2. someone will probably change this requirement someday
+		s.direction = DOWN;
+		s.num++;
 	}
 	// we need a termination state
-	if(!len)
+	if (!len)
 		return s.sum;
 	// set last known postion to current
 	s.r = i[0];
 	// recur
-	return aux(i+1, s, len-1);
+	return aux(i + 1, s, len - 1);
 }
-int main(void){
-
-//	int i[] = {0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}; // 6
-//	int i[] = {0, 3, 0, 3, 1, 0, 1, 3, 2, 1, 2, 1}; // 11
-	int i[] = {3, 1, 0, 3, 1, 0, 1, 3, 2, 1, 2, 1}; // 11
-	size_t len = sizeof(i)/sizeof(int) - 1;
-	struct s s = {INIT, 0, 0, i[0], 0};
-	printf ("%d\n", aux(i,s,len));
+int main(void)
+{
+	//	int i[] = {0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}; // 6
+	//	int i[] = {0, 3, 0, 3, 1, 0, 1, 3, 2, 1, 2, 1}; // 11
+	int i[] = { 3, 1, 0, 3, 1, 0, 1, 3, 2, 1, 2, 1 }; // 11
+	size_t len = sizeof(i) / sizeof(int) - 1;
+	struct s s = { INIT, 0, 0, i[0], 0 };
+	printf("%d\n", aux(i, s, len));
 }
 
 /*

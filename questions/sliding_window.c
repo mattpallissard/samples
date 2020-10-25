@@ -31,33 +31,30 @@ void aux(int *i, int w, size_t len)
 {
 	int j = 1;
 	int res = i[0];
-	do{
-		if(i[j] > res)
+	do {
+		if (i[j] > res)
 			res = i[j];
-	}while(++j < w);
+	} while (++j < w);
 
 	i[0] = res;
 	printf("r - %d:%d\n", res, i[0]);
-	if(--len < w)
+	if (--len < w)
 		return;
 	return aux(++i, w, len);
 }
 
-
-
-int main(void) {
-
-	int i[] = {1, 3, -1, -3, 5, 3, 6, 7};
+int main(void)
+{
+	int i[] = { 1, 3, -1, -3, 5, 3, 6, 7 };
 	int w = 3;
-	size_t len = sizeof(i)/sizeof(int);
-	int res[len-w];
+	size_t len = sizeof(i) / sizeof(int);
+	int res[len - w];
 
 	aux(i, w, len);
 
-
-	for(int c = 0; c <= len - w; c++)
+	for (int c = 0; c <= len - w; c++)
 		res[c] = i[c];
-	for(int c = 0; c <= len - w; c++)
+	for (int c = 0; c <= len - w; c++)
 		printf("%d ", res[c]);
 	printf("\n");
 }

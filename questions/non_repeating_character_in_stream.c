@@ -43,12 +43,7 @@ Output 2:
 
 // start with some constats, all 26 letters of the alphabet should fit in here 1 64bit uint
 
-enum {
-	LEN = 1,
-	MAX = 100000,
-	NONE= '#'
-};
-
+enum { LEN = 1, MAX = 100000, NONE = '#' };
 
 /*
    We'll need to get the bitmask for a given char.
@@ -57,26 +52,26 @@ enum {
 uint64_t get_mask(char i)
 {
 	// sub optimal, we can implement a _really_ stripped down verion of pow with a switch/fallthrough/bit-shift later.
-	return(pow(2, i-'0'));
+	return (pow(2, i - '0'));
 }
-
 
 /*
    now we can use the bitmask by locically OR'ing it with our storage
    */
-void insert(char i, uint64_t *b) {
+void insert(char i, uint64_t *b)
+{
 	*b |= (get_mask(i));
 }
-
 
 // getting the member is easier we can just convert to an int, bit shift and check least significant bit
 bool member(char i, uint64_t *b)
 {
-	return (*b >> (i-'0')) & 1;
+	return (*b >> (i - '0')) & 1;
 }
 
-void display(char *t, int i, int j) {
-	while(i <= j)
+void display(char *t, int i, int j)
+{
+	while (i <= j)
 		printf("%c", t[i++]);
 	printf("\n");
 }
@@ -86,14 +81,13 @@ void display(char *t, int i, int j) {
 */
 
 struct s {
-	char *original;  // pointer to the original string, we'll use that for checking for new characters
-	char *input; // pointer we'll use as we recur
+	char *original; // pointer to the original string, we'll use that for checking for new characters
+	char *input; // pointer too keep track of our location in the original string
 	char r[MAX * sizeof(char)]; // return buffer
-	char *ret;  // pointer for the return data
-	uint64_t seen[LEN];  // storage for seen once
+	char *ret; // pointer for our location in the return data
+	uint64_t seen[LEN]; // storage for seen once
 	uint64_t twice[LEN]; // storage for seen twice
 };
-
 
 /*
    we'll need a function to get the next character
@@ -101,41 +95,39 @@ struct s {
    If we've hit the end of the string return '#'
 
    */
-char get_next(struct s s, char *i){
-	if(!*i)
+char get_next(struct s s, char *i)
+{
+	if (!*i)
 		return NONE;
 
-	if(!member(*i, s.twice))
+	if (!member(*i, s.twice))
 		return *i;
 
-	return get_next(s, i+1);
+	return get_next(s, i + 1);
 }
 
-
 // now we run it
-void run(struct s s, char res){
-
+void run(struct s s, char res)
+{
 	// base case end of string
-	if(!*s.input){
-		*s.ret= '\0';
+	if (!*s.input) {
+		*s.ret = '\0';
 		return;
 	}
 
-
 	// if we haven't seen a member, insert it into the first
-	if(!member(*s.input, s.seen))
+	if (!member(*s.input, s.seen))
 		insert(*s.input, s.seen);
 	else
 		// if we have, insert it into the second
-		if(!member(*s.input, s.twice))
-			insert(*s.input, s.twice);
-
+		if (!member(*s.input, s.twice))
+		insert(*s.input, s.twice);
 
 	// if we don't have a result yet, take the first character
-	if(!res)
+	if (!res)
 		res = *s.input;
 	// if we've seen this input before, get the next character in the original string
-	else if(res == *s.input) {
+	else if (res == *s.input) {
 		res = get_next(s, s.original);
 	}
 
@@ -143,11 +135,9 @@ void run(struct s s, char res){
 	*s.ret++ = res;
 	s.input++;
 	run(s, res);
-
-
-
 }
-int main(void) {
+int main(void)
+{
 	uint64_t b[LEN] = {};
 	struct s s = {};
 	//s.original = "abcabc";
@@ -157,4 +147,3 @@ int main(void) {
 	run(s, '\0');
 	printf("%s\n", s.r);
 }
-

@@ -7,8 +7,7 @@
 
 typedef uint64_t type;
 typedef int max_type;
-enum {
-	MAX = 254,
+enum { MAX = 254,
 };
 
 struct o {
@@ -16,7 +15,6 @@ struct o {
 	bool (*eq)(type i, type j);
 	bool (*set)(type i, type j);
 };
-
 
 struct t {
 	int l, r;
@@ -32,8 +30,6 @@ struct r {
 	bool (*eq)(type i, type j);
 };
 
-
-
 bool lt(type i, type j)
 {
 	return i < j;
@@ -43,7 +39,6 @@ bool eq(type i, type j)
 {
 	return i == j;
 }
-
 
 struct t init_node(type i)
 {
@@ -65,28 +60,26 @@ struct r init_root()
 	return r;
 }
 
-
 bool member(type i, struct r r)
 {
 	uint8_t j = 0;
-	while(r.t[j].l != -1 || r.t[j].r != -1) {
-		if(r.eq(i, r.t[j].d))
+	while (r.t[j].l != -1 || r.t[j].r != -1) {
+		if (r.eq(i, r.t[j].d))
 			return true;
 
-		else if(r.lt(i, r.t[j].d))
+		else if (r.lt(i, r.t[j].d))
 			j = r.t[j].l;
 
 		else
 			j = r.t[j].r;
 	}
 	return r.eq(r.t[j].d, i);
-
 }
 
 uint8_t get_next(struct r *r)
 {
 	int i;
-	if(r->ld) {
+	if (r->ld) {
 		i = r->ld;
 		r->d[r->ld--] = 0;
 	} else {
@@ -97,22 +90,20 @@ uint8_t get_next(struct r *r)
 
 struct r insert(type i, struct r r)
 {
-
 	int j = 0, k = 0;
 	bool l;
 
-	for(;;){
-		if(r.eq(i, r.t[j].d))
+	for (;;) {
+		if (r.eq(i, r.t[j].d))
 			goto end;
-		else if (r.lt(i, r.t[j].d)){
+		else if (r.lt(i, r.t[j].d)) {
 			l = true;
-			if((j = r.t[j].l) < 0)
+			if ((j = r.t[j].l) < 0)
 				goto out;
 			k = j;
-		}
-		else {
+		} else {
 			l = false;
-			if((j = r.t[j].r) < 0)
+			if ((j = r.t[j].r) < 0)
 				goto out;
 			k = j;
 		}
@@ -121,7 +112,7 @@ struct r insert(type i, struct r r)
 out:
 	j = get_next(&r);
 	r.t[j] = init_node(i);
-	if(l)
+	if (l)
 		r.t[k].l = j;
 	else
 		r.t[k].r = j;
@@ -137,11 +128,7 @@ int main(void)
 	struct r r2 = insert(4, r);
 	struct r r3 = insert(5, r2);
 
-	printf("%d\n%d\n\n",
-			member(4, r2),
-			member(5, r2));
+	printf("%d\n%d\n\n", member(4, r2), member(5, r2));
 
-	printf("%d\n%d\n",
-			member(4, r3),
-			member(5, r3));
+	printf("%d\n%d\n", member(4, r3), member(5, r3));
 }

@@ -13,51 +13,53 @@ typedef struct node {
 } type;
 typedef type type;
 typedef int bs; //buffer size
-enum {
-	BUF_MAX = 254,
-	TYPE_SIZE = sizeof(type),
-	ERR = -1,
+enum { BUF_MAX = 254,
+       TYPE_SIZE = sizeof(type),
+       ERR = -1,
 };
 
-static inline bool lt(type *i, type *j) {
+static inline bool lt(type *i, type *j)
+{
 	return i->v < j->v;
 }
 
-
-static inline bool eq(type *i, type *j) {
+static inline bool eq(type *i, type *j)
+{
 	return i->v == j->v;
 }
 
-
-static inline void swap(type *i, type *j) {
+static inline void swap(type *i, type *j)
+{
 	type k = *i;
 	*i = *j;
 	*j = k;
 }
 
-bs distance(type *i){
-	if(i)
-		return(i->d);
-	return - 1;
+bs distance(type *i)
+{
+	if (i)
+		return (i->d);
+	return -1;
 }
-type *merge(type *i, type *j) {
-	if(!i)
+type *merge(type *i, type *j)
+{
+	if (!i)
 		return j;
-	if(!j)
+	if (!j)
 		return i;
 
-	if(lt(j, i))
+	if (lt(j, i))
 		swap(i, j);
 
-	if(!i->l)
+	if (!i->l)
 		i->l = j;
 	else
 		i->r = merge(i->r, j);
 
-	if(distance(i->r) > distance(i->l))
+	if (distance(i->r) > distance(i->l))
 		swap(i->r, i->l);
 
-	if(!i->r)
+	if (!i->r)
 		i->d = 0;
 	else
 		i->d = i->r->d + 1;
@@ -65,9 +67,10 @@ type *merge(type *i, type *j) {
 	return i;
 }
 
-type *init(dtype v) {
+type *init(dtype v)
+{
 	type *n;
-	if(!(n = malloc(sizeof(type))))
+	if (!(n = malloc(sizeof(type))))
 		goto out;
 
 	n->p = NULL;
@@ -81,13 +84,15 @@ out:
 	exit(1);
 }
 
-type *insert(type *i, dtype v) {
-	return(merge(i, init(v)));
+type *insert(type *i, dtype v)
+{
+	return (merge(i, init(v)));
 }
 
-void *rm_root(type **i) {
+void *rm_root(type **i)
+{
 	type *l, *r;
-	if(!i)
+	if (!i)
 		return *i;
 	l = (*i)->l;
 	r = (*i)->r;
@@ -96,30 +101,33 @@ void *rm_root(type **i) {
 	return *i;
 }
 
-dtype get_min(type *i){
+dtype get_min(type *i)
+{
 	return i->v;
 }
 
-dtype pop(type **i){
+dtype pop(type **i)
+{
 	dtype ret = ERR;
-	if(!i)
+	if (!i)
 		return ret;
 	ret = (*i)->v;
 	rm_root(i);
 	return ret;
 }
 
-
-void dump(type *i) {
-	if(i)
+void dump(type *i)
+{
+	if (i)
 		printf("%d\n", i->v);
-	if(i->l)
+	if (i->l)
 		dump(i->l);
-	if(i->r)
+	if (i->r)
 		dump(i->r);
 }
 
-int main(void){
+int main(void)
+{
 	type *i = init(0);
 	i = insert(i, 2);
 	i = insert(i, 3);
