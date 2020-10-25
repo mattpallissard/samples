@@ -22,6 +22,8 @@ bool is_valid(int m[R][C], bool s[R][C], int x, int y)
 	return (x >= 0) && (x < R) && (y >= 0) && (y < C) && (!s[y][x] && m[y][x]);
 }
 
+
+//ITERATIVE SOLUTION
 void aux(int m[R][C], bool s[R][C], int x, int y)
 {
 	s[y][x] = true;
