@@ -37,11 +37,12 @@ observability is more than a buzz word.
 I've been in the research space for several years now. My previous two
 employers.  You're often dealing with people above you that have came up via
 the research track, instead of a technical or business track.  These people have devoted
-their lives to asking questions and making sense of data.  Be it nuclear energy
-or health related, they may not know anything about your tech stack, but they
-ask really good questions.  You can't say 'I don't know' and you can't BS them,
-so you quickly realize you need to be able to ask your systems nuanced
-questions in an ad-hoc manner.  This is what observability is all about.
+their lives to asking questions and understanding domain specific problems.
+Making sense of data.  Be it nuclear energy or health related, they may not
+know anything about your tech stack, but they ask really good questions.  You
+can't say 'I don't know' and you can't BS them, so you quickly realize you need
+to be able to ask your systems nuanced questions in an ad-hoc manner.  This is
+what observability is all about.
 
 I'm also in the habit of keeping track of the upstream projects that I use,
 along with any competitors, keeping an eye on features in development and
