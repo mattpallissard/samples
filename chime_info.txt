@@ -1,0 +1,126 @@
+[cid:image001.png@01D6A94B.EFA61A50] Hi Matthew,
+
+https://livecode.amazon.jobs/session/3f4951a5-9d61-484f-9c16-ddce04fd1ff5
+https://chime.aws/5864782747
+	the meeting ID: 5864782747
++1 855-552-4463,,5864782747#
+
+I hope you are doing well! I just wanted to let you know of some changes to the
+team of interviewers that will be conducting your interviews. This email
+includes everything you’ll need to know about the big day, including how to
+set up and connect to Chime, the video conference app we’ll use for your
+interviews. Your meetings are scheduled on Monday, October 26. Please see table
+below for the full schedule.
+
+Amazon Chime Meeting:
+
+Please review the instructions on downloading and installing chime
+here<https://www.amazon.jobs/en/landing_pages/amazon-chime-instructions>. There
+are two ways to join a meeting once you’ve installed the app:
+
+1. Click the following meeting link to launch the call:
+https://chime.aws/5864782747 2. Or open Chime, click Join Meeting, and enter
+the meeting ID: 5864782747
+
+In the event of any technical difficulties, please have your cell phone nearby.
+You can call in and use the audio portion of your interview by dialing: +1
+855-552-4463,,5864782747#
+
+If you reside outside the US, please use the best international dial-in number
+here: https://aws.amazon.com/chime/dial-in-numbers
+
+Interview Schedule on Monday, October 26 (all in PDT timezone):
+
+INTERVIEWER NAME
+
+START AND END TIME
+
+1.
+
+Jeremy Viet
+
+10:00AM - 11:00AM
+
+2.
+
+Alexa Herrera & Jeff Bowden
+
+11:00AM - 12:00PM
+
+3.
+
+BREAK
+
+12:00PM - 1:00PM
+
+4.
+
+Michael Banks
+
+1:00PM - 2:00PM
+
+5.
+
+Marcus DeAnda
+
+2:00PM - 3:00PM
+
+6.
+
+Jerome Decq
+
+3:00PM - 4:00PM
+
+
+Coding and Design - Whiteboarding Guidance: I have provided a LiveCode link for
+the coding session of the interview. This system will allow you to code
+collaboratively with your interviewer. Here’s how to launch LiveCode in your
+interview: 1. Click on this link to start your session:
+https://livecode.amazon.jobs/session/3f4951a5-9d61-484f-9c16-ddce04fd1ff5 2.
+Enter your name (Note: The whiteboard will be locked until your interviewer
+opens the session)
+
+For your design session, we have approved the following guidance:
+
+  *   Use a pen and paper to share designs with the interviewer through your
+  *   video camera; or Use your favorite whiteboarding app and share screen in
+  *   Chime; or If needed, we suggest using a free whiteboard web-based product
+  *   such as https://awwapp.com, and share the screen through Chime.
+
+Note: Please test any whiteboard product (and Chime) prior to the scheduled
+interview to make sure there is proper understanding of how it functions.
+
+Pre-Interview Homework If you haven’t already, we recommend you review the
+following:
+
+  *   Brush up on the leadership
+  *   principles<https://www.amazon.jobs/en/principles> that make us who we are
+  *   at AWS.  Practice makes perfect! Here are some interview
+  *   resources<https://www.amazon.jobs/en/landing_pages/in-person-interview>
+  *   to help you prepare.  Learn more about our commitment to Diversity and
+  *   Inclusion at
+  *   Amazon<https://www.amazon.jobs/en/landing_pages/diversity-and-inclusion>
+  *   Learn more about the types of benefits and
+  *   perks<https://www.amazon.jobs/en/benefits/us-benefits-and-stock> our
+  *   employees receive
+Plan to hear back from us regarding next steps within one week of your
+interview. Feel free to reach out to your recruiting team contacts (listed
+below) with any questions.
+
+TJ Chu (taejunch@amazon.com) Recruiting Coordinator: Questions regarding
+interview scheduling, travel, and expenses.  Chris Martin (martnmy@amazon.com)
+Recruiter: Relocation/benefit questions and interview outcome.  Darren
+Weissbratten (dweissbr@amazon.com) Sourcer: Job openings and position specific
+questions.
+
+Thank you and best of luck!
+
+
+
+TJ Chu Recruiting Coordinator AWS Talent Acquisition Ph:206-266-4768
+
+[cid:image001.png@01D4C77A.743D50E0]
+
+Note: Email is the best way to reach me.  I will respond to your message as
+soon as possible.
+

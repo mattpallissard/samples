@@ -51,6 +51,11 @@ Radix Sort 	Ω(nk) 		θ(nk) 		O(nk) 		O(n+k)
 Counting Sort 	Ω(n+k) 		θ(n+k) 		O(n+k) 		O(k)
 Cubesort 	Ω(n) 		θ(n log(n)) 	O(n log(n)) 	O(n)
 
+Algorithm	Time Complexity		Space Complexity
+                	worst		best	worst
+Breath first search 	O(n+k)		O(1)	O(N)
+Depth first search
+
 Data Structure 		Time Complexity 														Space Complexity
 			Average 						Worst 									Worst
 			Access 		Search 	Insertion 	Deletion 	Access 	Search 	Insertion 	Deletion

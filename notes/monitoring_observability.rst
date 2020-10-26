@@ -33,7 +33,12 @@ running to emit data.  Things like dtrace, bpf/kernel tracepoints.
 
 dynamic instrumentation lets you get answers to ad-hoc questions that can live
 in deeper layers of the stack.  It gives you the ability to change the stack,
-coaxing it to emit the data that you need to debug.
+coaxing it to emit the data that you need to debug.  The stack above and below
+you may be abstracted away, but you should be able to get information out of
+the layer your operating on that allows you to reason about the ones above or
+below you.
+
+
 
 * Runtime instrumentation, this could be something like valgrind or gdb.
 * compiler assisted, clangs memory santizer
@@ -48,6 +53,27 @@ coaxing it to emit the data that you need to debug.
 
 
 monitoring is watching things, observability having the facilities to ask a specific question
+
+
+an example
+^^^^^^^^^^
+
+So something that can be gotten out of monitoring is a statemap.  All of your
+processes, and all of the linux states thier in Running, sleeping,
+uninteruptable sleep, stopped, whatever as a function of time.
+
+What you can't get from monitoring, is the nuance of each of those states.  In
+linux, sleeping can be something like I'm furiously trying to aquire a lock, or
+hey kernel, I don't have any work to do and don't want to waste cpu, wake me up
+when something interesting happens.
+
+If your application is instrumentatable it's observable.  You can capture that nuance.
+You can do this in the application itself, but linux tooling is getting
+really good, you can get a lot of that from the kernel now.
+
+Really, working from both ends is key.  You want instrumentation in layers of
+the stack above and below you as well.
+
 
 
 metrics
