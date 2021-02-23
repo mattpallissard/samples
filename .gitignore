@@ -1,3 +1,5 @@
 vgcore*
 test
 .ccls-cache
+_build
+dune-project
