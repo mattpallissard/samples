@@ -1,0 +1,84 @@
+type comparison = Lt | Eq | Gt
+
+module type ORDERED = sig
+  type t
+
+  val compare : t -> t -> comparison
+
+  val update : t -> t -> t
+end
+
+module type SET = sig
+  type elem
+
+  type set
+
+  type color
+
+  val empty : set
+
+  val insert : elem -> set -> set
+
+  val balance : color * set * elem * set -> set
+end
+
+module RBS (Element : ORDERED) : SET with type elem = Element.t = struct
+  type elem = Element.t
+
+  type color = R | B
+
+  type tree = E | T of color * tree * elem * tree
+
+  type set = tree
+
+  let empty = E
+
+  let balance = function
+    | B, T (R, T (R, i, j, k), l, m), n, o ->
+        T (R, T (B, i, j, k), l, T (B, m, n, o))
+    | B, T (R, i, j, T (R, k, l, m)), n, o ->
+        T (R, T (B, i, j, k), l, T (B, m, n, o))
+    | B, i, j, T (R, T (R, k, l, m), n, o) ->
+        T (R, T (B, i, j, k), l, T (B, m, n, o))
+    | B, i, j, T (R, k, l, T (R, m, n, o)) ->
+        T (R, T (B, i, j, k), l, T (B, m, n, o))
+    | i, j, k, l -> T (i, j, k, l)
+
+  let insert i j =
+    let rec aux = function
+      | E -> T (R, E, i, E)
+      | T (color, k, l, m) -> (
+        match Element.compare i l with
+        | Lt -> balance (color, aux k, l, m)
+        | Gt -> balance (color, k, l, aux m)
+        | Eq -> T (color, k, Element.update i l, m) )
+    in
+    match aux j with
+    | T (_, i, j, k) -> T (B, i, j, k)
+    | E -> E
+
+  (* never empty *)
+end
+
+module Ordered = struct
+  type t = B of char | R of char * int
+
+  let compare i j =
+    match (i, j) with
+    | (_, i'), (_, j') -> if i' = j' then Eq else if i' < j' then Lt else Gt
+
+  let update i j =
+    match (i, j) with
+    | (c, i'), (_, j') -> (c, i' + j')
+end
+
+module Wset = RBS (Ordered)
+
+
+
+(*
+let rec aux_input set word weight =
+  match (word, weight) with
+  | [], [] -> set
+  | h :: t, h' :: t' -> 
+      *)

@@ -1,0 +1,89 @@
+(* Enter your code here. Read input from STDIN. Print output to STDOUT *)
+type comparison = Lt | Eq | Gt
+
+let m = Hashtbl.create 409600
+
+exception INPUTERROR
+
+exception Next
+
+let get_inputs =
+  let split = Str.split (Str.regexp " ") in
+  let _ = read_line () in
+  (* toss out len *)
+  let genes = read_line () in
+  let weights = read_line () in
+  let num_items = int_of_string (read_line ()) in
+  let compare i j = if i < j then Lt else if i > j then Gt else Eq in
+  let rec aux_input l w g =
+    match (w, g) with
+    | [], [] -> ()
+    | h :: t, h' :: t' ->
+        Hashtbl.add m l (int_of_string h, h') ;
+        aux_input (l + 1) t t'
+    | _ -> raise INPUTERROR
+  in
+  let input = aux_input 0 (split weights) (split genes) in
+  let output = function
+    | min, max -> Printf.printf "%d %d\n" min max
+  in
+  let rec get_range_sum acc l r =
+    match compare l r with
+    | Lt -> (
+      match Hashtbl.find m l with
+      | weight, _ -> get_range_sum (weight + acc) (l + 1) r )
+    | _ -> acc
+  in
+  let rec run_it x score =
+    match score with
+    | _, max -> (
+      match x with
+      | 0 -> output score
+      | _ as x -> (
+        match split (read_line ()) with
+        | h :: t :: s :: _ ->
+            let l = int_of_string h in
+            let r = int_of_string t in
+            let can_max =
+              match compare (get_range_sum 0 l r) max with
+              | Gt -> true
+              | Lt | Eq -> false
+            in
+            let can_min acc min =
+              match compare acc min with
+              | Gt | Eq -> if min = -1 then true else false
+              | Lt -> true
+            in
+            let rec iter_scores l' acc score =
+              match compare l' r with
+              | Gt -> (
+                match score with
+                | min, max -> (
+                  match compare acc max with
+                  | Gt -> (min, acc)
+                  | _ -> (
+                    match compare acc min with
+                    | Lt -> (acc, max)
+                    | _ -> if min = -1 then (acc, max) else score ) ) )
+              | _ -> (
+                match Hashtbl.find m l' with
+                | weight, str ->
+                    iter_string l' 0 weight (Str.regexp str) acc score )
+            and iter_string ipos spos weight re acc score =
+              match score with
+              | min, _ -> (
+                try
+                  match (can_max, can_min acc min) with
+                  | false, false -> raise Next
+                  | _ ->
+                      let pos' = Str.search_forward re s spos in
+                      iter_string ipos (pos' + 1) weight re (acc + weight) score
+                with Not_found | Next -> iter_scores (ipos + 1) acc score )
+            in
+            run_it (x - 1) (iter_scores l 0 score)
+        | _ -> raise INPUTERROR ) )
+  in
+  input ;
+  run_it num_items (-1, 0)
+
+let () = get_inputs
