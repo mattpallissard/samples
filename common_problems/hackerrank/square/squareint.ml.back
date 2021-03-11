@@ -1,0 +1,38 @@
+exception INPUTERROR
+
+let squares =
+  let q = read_line () in
+  let rec isqrt n =
+    match n with
+    | 1 -> 1
+    | _ ->
+        let n' = isqrt (n - 1) in
+        (n' + (n / n')) / 2
+  in
+  let rec aux i j k =
+    match i * i > j with
+    | true -> print_int k ; print_newline ()
+    | false -> aux (i + 1) j (k + 1)
+  in
+  let rec get_first = function
+    | 0 -> 1
+    | _ as i ->
+        let sqr = isqrt i in
+        if sqr * sqr = i then sqr else get_first (i + 1)
+  in
+  let rec run = function
+    | 0 -> ()
+    | _ as i -> (
+        let s = read_line () in
+        match Str.split (Str.regexp " ") s with
+        | h :: t :: _ ->
+            let h' = int_of_string h in
+            let first = get_first h' in
+            let t' = int_of_string t in
+            aux first t' 0 ;
+            run (i - 1)
+        | _ -> raise INPUTERROR )
+  in
+  run (int_of_string q)
+
+let () = squares

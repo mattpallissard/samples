@@ -1,0 +1,146 @@
+type comparison = Gt | Lt | Eq
+
+let cmp i j = if i = j then Eq else if i < j then Lt else Gt
+
+let maximum l =
+  let rec aux i = function
+    | [] -> i
+    | h :: t -> (
+      match cmp h i with
+      | Gt -> aux h t
+      | Lt | Eq -> aux i t )
+  in
+  aux 0 l
+
+let to_list i j =
+  let rec aux n acc = if n < i then acc else aux (n - 1) (n :: acc) in
+  aux j []
+
+type state = int
+
+let nostate = 0
+
+type character = char
+
+exception Neverhere
+
+module State = struct
+  module T = struct
+    type t = state * char
+
+    let compare = compare
+  end
+
+  include T
+end
+
+module Goto = Map.Make (State)
+module Output = Map.Make (Int)
+
+type 'a goto = 'a Goto.t
+
+let explode s =
+  let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
+  exp (String.length s - 1) []
+
+let dictionary = List.map explode ["foo"; "bar"; "baz"]
+
+let rec add_one i m s =
+  match (i, m, s) with
+  | _, m, [] -> m
+  | state, m, c :: t -> (
+    try add_one (Goto.find (state, c) m) m t
+    with Not_found ->
+      let max = Goto.cardinal m in
+      add_one max (Goto.add (state, c) max m) t )
+
+let build_goto m s = (add_one nostate m s, s)
+
+let rec fin m state str =
+  match (state, str) with
+  | s, [] -> s
+  | s, c :: t -> (
+    try
+      let next = Goto.find (s, c) m in
+      fin m next t
+    with Not_found -> fin m nostate t )
+
+let rec build_output m d = function
+  | [] -> Output.empty
+  | c :: t ->
+      let rec tails = function
+        | [] -> []
+        | _ :: t as i -> i :: tails t
+      in
+      Output.add (fin m nostate c)
+        (List.filter (fun x -> List.mem x d) (tails c))
+        (build_output m d t)
+
+let rec path m s = function
+  | [] -> []
+  | c :: t ->
+      let s' = fin m s c in
+      s' :: path m s' t
+
+let nodes_at_depths m =
+  let paths = path m 0 dictionary in
+  List.map
+    (fun i ->
+      List.filter
+        (fun i -> 0 < i)
+        (List.map
+           (fun l -> if i < List.length l then List.nth i l else -1)
+           paths))
+    (to_list 0 (maximum (List.map List.length paths) - 1))
+
+(*
+module I = struct
+  let explode s =
+    let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
+    exp (String.length s - 1) []
+
+  let split = String.split_on_chars ~on:[' ']
+
+  let num = int_of_string (In_channel.input_line_exn In_channel.stdin)
+
+  let genes =
+    Stream.of_string (In_channel.input_line_exn In_channel.stdin)
+
+  let weights =
+    Stream.of_string (In_channel.input_line_exn In_channel.stdin)
+
+  let num_items = int_of_string (In_channel.input_line_exn In_channel.stdin)
+  let get_weights =
+    let open Core in
+    let word tree g w =
+      let rec c tree j = function
+        | [] -> tree
+        | [ch] -> c (W.insert (R (ch, j, int_of_string w)) tree) (j + 1) []
+        | ch :: ct -> c (W.insert (B ch) tree) (j + 1) ct
+      in
+      c tree 0 (explode g)
+    in
+    let rec iter_g tree i gs = function
+      | 0 -> tree
+      | num -> (
+          let rec iter_w i gs ws num =
+            match Stream.peek weights with
+            | None -> tree
+            | Some _ -> (
+                let wc = Stream.next weights in
+                match Char.equal wc ' ' with
+                | false -> iter_w i gs (ws ^ Char.to_string wc) num
+                | true -> iter_g (word tree gs ws) (i + 1) "" (num - 1) )
+          in
+          match Stream.peek genes with
+          | None -> tree
+          | Some _ -> (
+              let gc = Stream.next genes in
+              match Char.equal gc ' ' with
+              | true -> iter_w i gs "" num
+              | false -> iter_g tree i (gs ^ Char.to_string gc) num ) )
+    in
+    iter_g W.empty 0 "" num
+end
+
+*)

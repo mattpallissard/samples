@@ -1,164 +1,170 @@
-open Sexplib
-
-type comparison = Lt | Eq | Gt
-
-module type ORDERED = sig
-  type t
-
-  val compare : t -> t -> comparison
-
-  val show : t -> unit
-end
+type comparison = Lt | Gt | Eq
 
 module type SET = sig
-  type elem
+  type t
 
-  type set
+  type id
 
-  type color
+  type score
 
-  val empty : set
+  type key
 
-  val get : elem -> set -> elem list
+  val print : key -> unit
 
-  val insert : elem -> set -> set
-
-  val balance : color * set * elem * set -> set
+  val eq : key -> key -> bool
 end
 
-module RBS (Element : ORDERED) : SET with type elem = Element.t = struct
-  type elem = Element.t
+module Trie (S : SET) = struct
+  type key = S.key
 
-  type color = R | B
+  module T = Map.Make (struct
+    type t = key
 
-  type tree = E | T of color * tree * elem * tree
+    let compare = compare
+  end)
 
-  type set = tree
+  type t = S.t
 
-  let empty = E
+  type data = S.score
 
-  let get x set =
+  type 'a trie =
+    | H of 'a children
+    | B of key * 'a children
+    | R of key * 'a children option * data
+    | Nil
+
+  and 'a children = 'a trie T.t
+
+  (*https://www.lri.fr/~filliatr/publis/enum2.pdf *)
+
+  let get_fail c m =
     let rec aux = function
-      | E -> []
-      | T (_, j, k, l) -> (
-        match Element.compare x k with
-        | Gt -> aux l
-        | Eq -> (k :: aux j) @ aux j
-        | Lt -> aux j )
+      | R (_, None, _) | Nil | H _ -> None
+      | (B (c', i) | R (c', Some i, _)) as j -> (
+          if S.eq c c' then Some j
+          else
+            try T.find c m
+            with Not_found -> (
+              match aux_seq (T.to_seq m |> List.of_seq) with
+              | Some i -> i
+              | None -> aux j ) )
+    and aux_seq = function
+      | [] -> None
+      | h :: t -> (
+        match h with
+        | B (_, i) | R (_, Some i, _) -> (
+          match aux h with
+          | Some i -> i
+          | None -> aux_seq t ) )
     in
-    aux set
+    aux m
 
-  let balance = function
-    | B, T (R, T (R, i, j, k), l, m), n, o ->
-        T (R, T (B, i, j, k), l, T (B, m, n, o))
-    | B, T (R, i, j, T (R, k, l, m)), n, o ->
-        T (R, T (B, i, j, k), l, T (B, m, n, o))
-    | B, i, j, T (R, T (R, k, l, m), n, o) ->
-        T (R, T (B, i, j, k), l, T (B, m, n, o))
-    | B, i, j, T (R, k, l, T (R, m, n, o)) ->
-        T (R, T (B, i, j, k), l, T (B, m, n, o))
-    | i, j, k, l -> T (i, j, k, l)
+  let empty = Nil
 
-  let insert i j =
-    let rec aux = function
-      | E -> T (R, E, i, E)
-      | T (color, k, l, m) as elem -> (
-        match Element.compare i l with
-        | Lt | Eq -> balance (color, aux k, l, m)
-        | Gt -> balance (color, k, l, aux m) )
+  let emptyhead = H T.empty
+
+  let rec get char_list m =
+    match char_list with
+    | [] -> raise Not_found
+    | [h] -> (
+      match m with
+      | H _ -> raise Not_found
+      | R (c, _, d) -> if S.eq h c then d else raise Not_found
+      | B (_, _) -> raise Not_found
+      | Nil -> raise Not_found )
+    | h :: t :: r -> (
+      match m with
+      | H m -> T.find h m |> get (t :: r)
+      | R (c, Some m, _) | B (c, m) ->
+          if S.eq h c then T.find t m |> get (t :: r) else raise Not_found
+      | R (_, None, _) -> raise Not_found
+      | Nil -> raise Not_found )
+
+  exception Neverhere
+
+  let insert char_list data m =
+    let rec aux m = function
+      | [] -> raise Neverhere
+      | [h] -> R (h, None, data)
+      | h :: t :: r -> (
+        match m with
+        | H m -> (
+          match T.find_opt h m with
+          | Some i -> H (T.add h (aux i (t :: r)) m)
+          | None -> H (T.add h (aux Nil (t :: r)) m) )
+        | Nil -> B (h, T.add t (aux Nil (t :: r)) T.empty)
+        | B (c, m) -> (
+            if S.eq c h then
+              match T.find_opt t m with
+              | Some i -> B (c, T.add t (aux i (t :: r)) m)
+              | None -> B (c, T.add t (aux Nil (t :: r)) m)
+            else
+              match T.find_opt h m with
+              | Some i -> aux i (t :: r)
+              | None -> aux (B (h, T.empty)) (t :: r) )
+        | R (c, m, d) -> (
+          match m with
+          | Some m -> (
+              if S.eq c h then
+                match T.find_opt t m with
+                | Some i -> R (c, Some (T.add t (aux i r) m), d)
+                | None ->
+                    R (c, Some (T.add t (aux (B (h, T.empty)) (t :: r)) m), d)
+              else
+                match T.find_opt h m with
+                | Some i -> R (c, Some (T.add t (aux i (t :: r)) m), d)
+                | None ->
+                    R (c, Some (T.add t (aux (B (h, T.empty)) (t :: r)) m), d) )
+          | None ->
+              if S.eq c h then
+                R (c, Some (T.add t (aux Nil (t :: r)) T.empty), d)
+              else R (h, Some (T.add t (aux Nil (t :: r)) T.empty), d) ) )
     in
-    match aux j with
-    | T (_, i, j, k) -> T (B, i, j, k)
-    | E -> E
-
-  (* never empty *)
+    aux m char_list
 end
 
-let sexp_of_char = Core.sexp_of_char
-let char_of_sexp = Core.char_of_sexp
-let int_of_sexp = Core.int_of_sexp
-let sexp_of_int = Core.sexp_of_int
+module Set = struct
+  type score = int
 
-type node = B of char | R of char * int * int [@@deriving sexp]
+  type id = int
 
-module Ordered = struct
-  type t = node [@@deriving sexp]
+  type t = score * id
 
-  let compare i j =
-    let aux i j = if i = j then Eq else if i < j then Lt else Gt in
-    match (i, j) with
-    | R (i, _, _), R (j, _, _) -> aux i j
-    | B i, B j -> aux i j
-    | R (i, _, _), B j -> aux i j
-    | B i, R (j, _, _) -> aux i j
+  type mapping = char list * score
 
-  let show = function
-    | B i -> Printf.printf "black: %c\n" i
-    | R (i, j, k) -> Printf.printf "Red: %c %d %d\n" i j k
+  type key = char
+
+  let print = Printf.printf "%c"
+
+  let eq i j = i = j
 end
 
-module W = RBS (Ordered)
+module A = Trie (Set)
 
-module I = struct
-  let explode s =
-    let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
-    exp (String.length s - 1) []
-
-  let split = String.split_on_char ' '
-
-  let num = int_of_string (read_line ())
-
-  let genes =
-    let t = Sys.time () in
-    let foo = read_line () in
-    Printf.printf "read genes: %fs\n" (Sys.time () -. t) ;
-    Stream.of_string foo
-
-  let weights =
-    let t = Sys.time () in
-    let foo = read_line () in
-    Printf.printf "read weights: %fs\n" (Sys.time () -. t) ;
-    Stream.of_string foo
-
-  let num_items = int_of_string (read_line ())
-
-  let get_weights =
-    let open Core in
-    let word tree g w =
-      let rec c tree j = function
-        | [] -> tree
-        | [ch] -> c (W.insert (R (ch, j, int_of_string w)) tree) (j + 1) []
-        | ch :: ct -> c (W.insert (B ch) tree) (j + 1) ct
-      in
-      c tree 0 (explode g)
-    in
-    let rec iter_g tree i gs = function
-      | 0 -> tree
-      | num -> (
-          let rec iter_w i gs ws num =
-            match Stream.peek weights with
-            | None -> tree
-            | Some _ -> (
-                let wc = Stream.next weights in
-                match Char.equal wc ' ' with
-                | false -> iter_w i gs (ws ^ Char.to_string wc) num
-                | true -> iter_g (word tree gs ws) (i + 1) "" (num - 1) )
-          in
-          match Stream.peek genes with
-          | None -> tree
-          | Some _ -> (
-              let gc = Stream.next genes in
-              match Char.equal gc ' ' with
-              | true -> iter_w i gs "" num
-              | false -> iter_g tree i (gs ^ Char.to_string gc) num ) )
-    in
-    iter_g W.empty 0 "" num
-end
-
-let display = function
-  | B i -> Printf.printf "black: %c\n" i
-  | R (i, j, k) -> Printf.printf "red: %c %d %d\n" i j k
+let explode s =
+  let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
+  exp (String.length s - 1) []
 
 let () =
-  let foo = I.get_weights in
-  List.map display (W.get (B 'a') foo) |> fun _ -> () ; print_string "here\n"
+  let foo = A.insert (explode "foo") 3 A.emptyhead in
+  let baz = A.insert (explode "foo") 4 foo in
+  let buzz = A.insert (explode "doodoo") 11 baz in
+  let fizz = A.insert (explode "doofus") 10 buzz in
+  let buzz =
+    A.insert (explode "howdydoodymotherfuckerthisoneisloooong") 100 fizz
+  in
+  let baz =
+    A.insert (explode "howdydoodymotherfuckerthatoneisloooong") 200 buzz
+  in
+  A.get (explode "foo") fizz |> Printf.printf "%d\n" ;
+  (*
+  A.get (explode "fool") fizz |> Printf.printf "%d\n" ;
+  *)
+  A.get (explode "doofus") baz |> Printf.printf "%d\n" ;
+  A.get (explode "doodoo") baz |> Printf.printf "%d\n" ;
+  A.get (explode "howdydoodymotherfuckerthisoneislooong") baz
+  |> Printf.printf "%d\n" ;
+  A.get (explode "howdydoodymotherfuckerthatoneisloooong") baz
+  |> Printf.printf "%d\n" ;
+  try A.get (explode "doo") baz |> Printf.printf "%d\n"
+  with Not_found -> print_string "expected results\n"
