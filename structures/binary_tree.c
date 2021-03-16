@@ -7,14 +7,11 @@
 
 typedef uint64_t type;
 typedef int max_type;
-enum { MAX = 254,
+enum {
+	MAX = 254,
 };
 
-struct o {
-	bool (*lt)(type i, type j);
-	bool (*eq)(type i, type j);
-	bool (*set)(type i, type j);
-};
+enum { Gt, Lt, Eq };
 
 struct t {
 	int l, r;
@@ -26,18 +23,19 @@ struct r {
 	max_type ld;
 	max_type d[MAX];
 	struct t t[MAX];
-	bool (*lt)(type i, type j);
-	bool (*eq)(type i, type j);
+	int (*cmp)(type i, type j);
 };
 
-bool lt(type i, type j)
+int cmp(type i, type j)
 {
-	return i < j;
-}
-
-bool eq(type i, type j)
-{
-	return i == j;
+	if (i < j)
+		return Lt;
+	else if (i > j)
+		return Gt;
+	else if (i == j)
+		return Eq;
+	else
+		return -1;
 }
 
 struct t init_node(type i)
@@ -52,8 +50,7 @@ struct t init_node(type i)
 struct r init_root()
 {
 	struct r r;
-	r.eq = eq;
-	r.lt = lt;
+	r.cmp = cmp;
 	r.n = 1;
 	r.ld = 0;
 	memset(r.t, -1, MAX * sizeof(struct t));
@@ -64,27 +61,29 @@ bool member(type i, struct r r)
 {
 	uint8_t j = 0;
 	while (r.t[j].l != -1 || r.t[j].r != -1) {
-		if (r.eq(i, r.t[j].d))
+		switch (r.cmp(i, r.t[j].d)) {
+		case Eq:
 			return true;
-
-		else if (r.lt(i, r.t[j].d))
+		case Lt:
 			j = r.t[j].l;
-
-		else
+			break;
+		case Gt:
 			j = r.t[j].r;
+			break;
+		}
 	}
-	return r.eq(r.t[j].d, i);
+	return r.cmp(r.t[j].d, i) == Eq ? true : false;
 }
 
-uint8_t get_next(struct r *r)
+int get_next(struct r *r)
 {
 	int i;
 	if (r->ld) {
 		i = r->ld;
 		r->d[r->ld--] = 0;
-	} else {
+	} else
 		i = r->n++;
-	}
+
 	return i;
 }
 
@@ -94,14 +93,15 @@ struct r insert(type i, struct r r)
 	bool l;
 
 	for (;;) {
-		if (r.eq(i, r.t[j].d))
+		switch (r.cmp(i, r.t[j].d)) {
+		case Eq:
 			goto end;
-		else if (r.lt(i, r.t[j].d)) {
+		case Lt:
 			l = true;
-			if ((j = r.t[j].l) < 0)
+			if ((j = r.t[j].l) < 0) // if we hit negative from initialization
 				goto out;
 			k = j;
-		} else {
+		case Gt:
 			l = false;
 			if ((j = r.t[j].r) < 0)
 				goto out;
