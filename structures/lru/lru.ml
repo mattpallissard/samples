@@ -110,14 +110,14 @@ let insert i node =
       Hashtbl.add h i n
   | T (P _, _, _) -> raise Neverhere
 
-let remove m =
+let remove m a =
   match !m with
   | E | T (N, _, N) -> raise Neverhere
   | T (N, d, P i) -> (
     match !i with
     | T (P _, dl, P r) ->
         i := T (N, dl, P r) ;
-        m := !i ;
+        a := i ;
         Hashtbl.remove h d
     | _ -> raise Neverhere )
   | T (P i, d, N) -> (
@@ -143,17 +143,12 @@ let rec display = function
       match r with
       | N -> print_string "end\n"
       | P r -> display !r )
-(*
+
 let get i a =
-  (* optimization could check for equality on the head *)
   let j = Hashtbl.find h i in
-  match (!(!a), !j) with
-  | T (_, l, _), T (_, v, _) -> (
-    match l = v with
-    | true -> i
-    | false -> remove j ; insert v a ; v )
-  | _, _ -> raise Neverhere
-  *)
+  match !j with
+  | T (_, v, _) -> remove j a ; insert v a ; v
+  | _ -> raise Neverhere
 
 let () =
   let z = ref E in
@@ -168,8 +163,15 @@ let () =
     insert 7 a
   in
   () ;
-  get 7 a |> Printf.printf "%d\n\n" ;
-  display !(!a) |> print_newline ;
+  get 7 a |> Printf.printf "-%d\n\n" ;
+  get 6 a |> Printf.printf "-%d\n\n" ;
+  get 5 a |> Printf.printf "-%d\n\n" ;
+  get 4 a |> Printf.printf "-%d\n\n" ;
+  get 3 a |> Printf.printf "-%d\n\n" ;
+  get 2 a |> Printf.printf "-%d\n\n" ;
+  display !(!a) |> print_newline
+
+(*
   get 6 a |> Printf.printf "%d\n\n" ;
   display !(!a) |> print_newline ;
   get 5 a |> Printf.printf "%d\n\n" ;
@@ -181,8 +183,6 @@ let () =
   get 2 a |> Printf.printf "%d\n\n" ;
   get 1 a |> Printf.printf "%d\n\n" ;
   display !(!a) |> print_newline
-
-(*
   display !(!a) |> print_newline ;
   remove (Hashtbl.find h 4) ;
   display !(!a) |> print_newline ;
