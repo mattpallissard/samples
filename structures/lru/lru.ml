@@ -16,82 +16,9 @@ let h = Hashtbl.create 10
 
 let init i = ([], i, [])
 
-let dl_of_list = function
-  | h :: t -> ([], h, t)
-  | [] -> raise Empty
-
 let empty = E
 
-let check = function
-  | E -> print_string "empty\n"
-  | T(N, d, N) -> Printf.printf "%d: none\n" d;
-  | T(P _, d, N) -> Printf.printf "%d: no r\n" d;
-  | T(N, d, P _) -> Printf.printf "%d: no l\n" d;
-  | T(P _, d, P _) -> Printf.printf "%d: both\n" d
-
-let rec check_r = function
-  | E -> print_string "empty\n";
-  | T(N, d, N) -> Printf.printf "%d: none\n" d;
-  | T(P l, d, N) -> Printf.printf "%d: no r\n" d; check_l !l
-  | T(N, d, P r) -> Printf.printf "%d: no l\n" d; check_r !r
-  | T(P _, d, P r) -> Printf.printf "%d: both\n" d; check_r !r
-and check_l = function
-  | E -> print_string "empty\n";
-  | T(N, d, N) -> Printf.printf "%d: none\n" d;
-  | T(P l, d, N) -> Printf.printf "%d: no r\n" d; check_l !l
-  | T(N, d, P _) -> Printf.printf "%d: no l\n" d;
-  | T(P l, d, P _) -> Printf.printf "%d: both\n" d; check_l !l
-
-let insert i node =
-  match !(!node) with
-  | E ->
-      let n = ref (T (N, i, N)) in
-      node := n ;
-      Hashtbl.add h i n
-  | T (N, d, P r) -> (
-    match !r with
-    | T (_, d', _) ->
-        Printf.printf "two - %d %d %d\n" i d d';
-        let n = ref (T(N, i, P !node)) in
-        !node := T(P n, d, P r);
-        node := n;
-        Hashtbl.add h i n ;
-    | E  -> raise Neverhere)
-  | T (N, d, N) -> (
-      Printf.printf "three - %d %d\n" i d ;
-      let n =  ref( T (N, i, P (!node))) in
-      !node := T(P n, d, N);
-      node := n ;
-      Hashtbl.add h i n;)
-  | T(P _, _, _) ->  raise Neverhere
-
-let current = function
-  | E -> raise Empty
-  | T (_, i, _) -> i
-
-let next = function
-  | E -> raise Empty
-  | T (_, _, r) -> r
-
-let prev = function
-  | lh :: lt, i, r -> (lh, lt, i :: r)
-  | _ -> raise Eof
-
-let remove m =
-  match !m with
-  | E | T (N, _, N) -> raise Neverhere
-  | T (N, _, P i) | T (P i, _, N) -> print_string "dos\n"; m := !i
-  | T (P l, d, P r) -> ( match !l, !r with
-    | T (_, _, _), E -> raise Neverhere
-    | E, T (_, _, _) -> raise Neverhere
-    | T (ll, ld, P lr), T (P rl, rd, rr) -> (
-          lr := T (ll, ld, P (lr));
-          rl := T (P (rl), rd, rr);
-          Printf.printf "%d %d %d\n" ld d rd;
-          Hashtbl.remove h d ;
-          )
-    | _, _ -> raise Empty2 )
-
+(*
 let r_to i m =
   let rec aux m' =
     match !m' with
@@ -118,26 +45,114 @@ let l_to i m =
   in
   aux !m
 
+let check = function
+  | E -> print_string "empty\n"
+  | T (N, d, N) -> Printf.printf "%d: none\n" d
+  | T (P _, d, N) -> Printf.printf "%d: no r\n" d
+  | T (N, d, P _) -> Printf.printf "%d: no l\n" d
+  | T (P _, d, P _) -> Printf.printf "%d: both\n" d
+
+let rec check_r = function
+  | E -> print_string "empty\n"
+  | T (N, d, N) -> Printf.printf "%d: none\n" d
+  | T (P l, d, N) ->
+      Printf.printf "%d: no r\n" d ;
+      check_l !l
+  | T (N, d, P r) ->
+      Printf.printf "%d: no l\n" d ;
+      check_r !r
+  | T (P _, d, P r) ->
+      Printf.printf "%d: both\n" d ;
+      check_r !r
+
+and check_l = function
+  | E -> print_string "empty\n"
+  | T (N, d, N) -> Printf.printf "%d: none\n" d
+  | T (P l, d, N) ->
+      Printf.printf "%d: no r\n" d ;
+      check_l !l
+  | T (N, d, P _) -> Printf.printf "%d: no l\n" d
+  | T (P l, d, P _) ->
+      Printf.printf "%d: both\n" d ;
+      check_l !l
+
+let current = function
+  | E -> raise Empty
+  | T (_, i, _) -> i
+
+let next = function
+  | E -> raise Empty
+  | T (_, _, r) -> r
+
+let prev = function
+  | lh :: lt, i, r -> (lh, lt, i :: r)
+  | _ -> raise Eof
+  *)
+
+let insert i node =
+  match !(!node) with
+  | E ->
+      let n = ref (T (N, i, N)) in
+      node := n ;
+      Hashtbl.add h i n
+  | T (N, d, P r) -> (
+    match !r with
+    | T (_, _, _) ->
+        let n = ref (T (N, i, P !node)) in
+        !node := T (P n, d, P r) ;
+        node := n ;
+        Hashtbl.add h i n
+    | E -> raise Neverhere )
+  | T (N, d, N) ->
+      let n = ref (T (N, i, P !node)) in
+      !node := T (P n, d, N) ;
+      node := n ;
+      Hashtbl.add h i n
+  | T (P _, _, _) -> raise Neverhere
+
+let remove m =
+  match !m with
+  | E | T (N, _, N) -> raise Neverhere
+  | T (N, d, P i) -> (
+    match !i with
+    | T (P _, dl, P r) ->
+        i := T (N, dl, P r) ;
+        m := !i ;
+        Hashtbl.remove h d
+    | _ -> raise Neverhere )
+  | T (P i, d, N) -> (
+    match !i with
+    | T (l, dl, P _) ->
+        i := T (l, dl, N) ;
+        Hashtbl.remove h d
+    | _ -> raise Neverhere )
+  | T (P l, d, P r) -> (
+    match (!l, !r) with
+    | T (_, _, _), E -> raise Neverhere
+    | E, T (_, _, _) -> raise Neverhere
+    | T (ll, ld, _), T (_, rd, rr) ->
+        l := T (ll, ld, P r) ;
+        r := T (P l, rd, rr) ;
+        Hashtbl.remove h d
+    | _, _ -> raise Empty2 )
+
 let rec display = function
-  | E -> print_string "empty\n";
+  | E -> print_string "empty\n"
   | T (_, i, r) -> (
       Printf.printf "%d\n" i ;
       match r with
-      | N -> print_string "end\n";
+      | N -> print_string "end\n"
       | P r -> display !r )
-
-  (*
-let check i =
-  match i with
-  | T (N, d, _) -> Printf.printf "%d: bad left\n" d
-  | T (_, _, N) -> print_string "bad right\n"
-*)
-
-  (*
+(*
 let get i a =
+  (* optimization could check for equality on the head *)
   let j = Hashtbl.find h i in
-  | T (_, v, _) -> remove j ; insert v a ; v
-  | T (_, v, _) -> remove j ; insert v a ; v
+  match (!(!a), !j) with
+  | T (_, l, _), T (_, v, _) -> (
+    match l = v with
+    | true -> i
+    | false -> remove j ; insert v a ; v )
+  | _, _ -> raise Neverhere
   *)
 
 let () =
@@ -150,24 +165,29 @@ let () =
     insert 4 a ;
     insert 5 a ;
     insert 6 a ;
-    insert 7 a ;
+    insert 7 a
   in
-  ();
+  () ;
+  get 7 a |> Printf.printf "%d\n\n" ;
+  display !(!a) |> print_newline ;
+  get 6 a |> Printf.printf "%d\n\n" ;
+  display !(!a) |> print_newline ;
+  get 5 a |> Printf.printf "%d\n\n" ;
+  display !(!a) |> print_newline ;
+  get 4 a |> Printf.printf "%d\n\n" ;
+  display !(!a) |> print_newline ;
+  get 3 a |> Printf.printf "%d\n\n" ;
+  display !(!a) |> print_newline ;
+  get 2 a |> Printf.printf "%d\n\n" ;
+  get 1 a |> Printf.printf "%d\n\n" ;
+  display !(!a) |> print_newline
+
+(*
   display !(!a) |> print_newline ;
   remove (Hashtbl.find h 4) ;
   display !(!a) |> print_newline ;
-  remove (Hashtbl.find h 3) ;
-  (*
-  display !(!a) |> print_newline ;
-  remove (Hashtbl.find h 4) ;
-  display (!a) |> print_newline ;
-  remove (Hashtbl.find h 3) ;
-  display (!a) |> print_newline ;
-  remove (Hashtbl.find h 2) ;
-  display (!a) |> print_newline ;
-  remove (Hashtbl.find h 6) ;
-  remove (Hashtbl.find h 3) ;
-  get 4 a |> Printf.printf "%d\n\n";
+  remove (Hashtbl.find h 1) ;
+  display !(!a) |> print_newline
   get 7 a |> Printf.printf "%d\n\n";
   get 4 a |> Printf.printf "%d\n\n";
   display (!a) |> print_newline
