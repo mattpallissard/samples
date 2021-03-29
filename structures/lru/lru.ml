@@ -32,7 +32,7 @@ DEBUG
             | P r -> aux r )
     in
     aux m
-  
+
   let l_to i m =
     let rec aux m' =
       match !m' with
@@ -45,14 +45,14 @@ DEBUG
             | P l -> aux l )
     in
     aux !m
-  
+
   let check = function
     | E -> print_string "empty\n"
     | T (N, d, N) -> Printf.printf "%d: none\n" d
     | T (P _, d, N) -> Printf.printf "%d: no r\n" d
     | T (N, d, P _) -> Printf.printf "%d: no l\n" d
     | T (P _, d, P _) -> Printf.printf "%d: both\n" d
-  
+
   let rec check_r = function
     | E -> print_string "empty\n"
     | T (N, d, N) -> Printf.printf "%d: none\n" d
@@ -65,7 +65,7 @@ DEBUG
     | T (P _, d, P r) ->
         Printf.printf "%d: both\n" d ;
         check_r !r
-  
+
   and check_l = function
     | E -> print_string "empty\n"
     | T (N, d, N) -> Printf.printf "%d: none\n" d
@@ -76,22 +76,22 @@ DEBUG
     | T (P l, d, P _) ->
         Printf.printf "%d: both\n" d ;
         check_l !l
-  
+
   let current = function
     | E -> raise Empty
     | T (_, i, _) -> i
-  
+
   let next = function
     | E -> raise Empty
     | T (_, _, r) -> r
-  
+
   let prev = function
     | lh :: lt, i, r -> (lh, lt, i :: r)
     | _ -> raise Eof
-  
-  
+
+
   *)
-  
+
 let insert i node =
   match !(!node) with
   | E ->
