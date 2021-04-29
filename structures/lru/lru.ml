@@ -14,7 +14,6 @@ and 'a p = N | P of 'a dl ref | L of 'a dl ref
 
 let h = Hashtbl.create 10
 
-let init i = ([], i, [])
 
 let empty = E
 
