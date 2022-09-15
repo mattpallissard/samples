@@ -63,6 +63,11 @@ void insert(char i, uint64_t *b)
 	*b |= (get_mask(i));
 }
 
+void rm(char i, uint64_t *b)
+{
+	*b &= ~(get_mask(i));
+}
+
 // getting the member is easier we can just convert to an int, bit shift and check least significant bit
 bool member(char i, uint64_t *b)
 {

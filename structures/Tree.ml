@@ -1,4 +1,4 @@
-open Printf
+
 
 type comparison = Lt | Eq | Gt
 
@@ -69,7 +69,7 @@ module OrderedInodes=
       if i = j then Eq
       else if i < j then Lt
       else Gt
-    let print i  =  printf "%d\n" i
+    let print i  =  Printf.printf "%d\n" i
   end
 
 

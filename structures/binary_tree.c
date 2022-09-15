@@ -101,11 +101,13 @@ struct r insert(type i, struct r r)
 			if ((j = r.t[j].l) < 0) // if we hit negative from initialization
 				goto out;
 			k = j;
+                        break;
 		case Gt:
 			l = false;
 			if ((j = r.t[j].r) < 0)
 				goto out;
 			k = j;
+                        break;
 		}
 	}
 
