@@ -64,7 +64,7 @@ end
 
 module OrderedInodes=
   struct
-    type t = Unix.file_perm
+    type t = int
     let compare i j =
       if i = j then Eq
       else if i < j then Lt
@@ -73,4 +73,14 @@ module OrderedInodes=
   end
 
 
-module ISet =  UnbalancedSet(OrderedInodes)
+module I =  UnbalancedSet(OrderedInodes)
+
+let () =
+  I.insert 2 I.empty
+    |> I.insert 3
+    |> I.insert 240
+    |> I.insert 2
+    |> I.insert 240
+    |> I.insert 239
+    |> I.display
+
